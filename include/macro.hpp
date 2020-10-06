@@ -61,6 +61,7 @@ class MacroDefinition{
 class Macro: public PreProcessing{
     public:
         void macroDeclaration(ifstream& inputFile, string line);
+        void checkMacro(string line, ofstream& outputFile, bool& removeLine);
 
         void printMNT();
         void printMDT();

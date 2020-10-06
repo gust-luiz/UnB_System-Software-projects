@@ -63,6 +63,30 @@ void PreProcessing::equDeclaration(string line){
 }
 
 
+string PreProcessing::checkEqu(string line){
+
+    string token, value;
+    string newLine = line;
+
+    replace(newLine.begin(), newLine.end(), ':', ' ');
+    replace(newLine.begin(), newLine.end(), ',', ' ');
+
+    stringstream ss(newLine);
+
+    while(ss >> token){
+        for (vector<EquDirective*>::iterator it = equList.begin(); it != equList.end(); it++) {
+            if((*it)->getLabel() == token){
+                value = stoi((*it)->getValue());
+                line = line.replace(line.find(token), token.size(), value);
+                break;
+            }
+        }
+    }
+
+    return line;
+}
+
+
 void PreProcessing::ifClause(ifstream &inputFile, string line) {
 
     string ifExpression;
@@ -104,10 +128,11 @@ void PreProcessing::runPreProcessing(string filename){
     ifstream inputFile(filename);
     ofstream outputFile(filename.substr(0, filename.find('.')) + ".pre");
     string line, nextLine;
-    bool removeLine;
+    bool removeLine, declaration;
     
     while(getline(inputFile, line)){
         removeLine = false;
+        declaration = false;
 
         line = lineCleaning(line);
 
@@ -137,11 +162,13 @@ void PreProcessing::runPreProcessing(string filename){
             if (line.find("MACRO") != -1){
                 macro->macroDeclaration(inputFile, line);
                 removeLine = true;
+                declaration = true;
             }
 
             if (line.find("EQU") != -1){
                 equDeclaration(line);
                 removeLine = true;
+                declaration = true;
             }
 
 
@@ -150,6 +177,11 @@ void PreProcessing::runPreProcessing(string filename){
         if (line.find("IF") != -1){
             ifClause(inputFile, line);
             removeLine = true;
+        }
+
+        if (!declaration) {
+            macro->checkMacro(line, outputFile, removeLine);
+            checkEqu(line);
         }
 
         if (removeLine == false){

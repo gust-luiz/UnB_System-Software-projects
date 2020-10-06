@@ -37,12 +37,17 @@ class EquDirective{
 class PreProcessing{
     public:
         PreProcessing(){}
+
         string lineUpperCase(string line);
         string lineCleaning(string line);
         string lineCleanExtraBlanks(string line);
         string lineCleanComments(string line);
+
         void runPreProcessing(string filename);
+
         void equDeclaration(string line);
+        string checkEqu(string line);
+
         void ifClause(ifstream &inputFile, string line);
 
         void printEquList();

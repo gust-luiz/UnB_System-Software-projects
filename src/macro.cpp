@@ -1,5 +1,17 @@
 #include "../include/macro.hpp"
 
+
+void findAndReplaceAll(string &data, string toSearch, string replaceStr){
+
+    size_t pos = data.find(toSearch);
+
+    while( pos != string::npos){
+        data.replace(pos, toSearch.size(), replaceStr);
+        pos = data.find(toSearch, pos + replaceStr.size());
+    }
+}
+
+
 void Macro::macroDeclaration(ifstream& inputFile, string line){
 
     replace(line.begin(), line.end(), ':', ' ');
@@ -52,12 +64,44 @@ void Macro::macroDeclaration(ifstream& inputFile, string line){
                 }
             }
         }
-        buffer = buffer + line + "\n";
+        buffer += line + "\n";
     }
 
     MacroDefinition *macroDefinition = new MacroDefinition();
     macroDefinition->setDefinition(buffer);
     MDT.push_back(macroDefinition);
+}
+
+
+void Macro::checkMacro(string line, ofstream& outputFile, bool& removeLine){
+
+    string token;
+    string newLine = line;
+    string buffer;
+
+    replace(newLine.begin(), newLine.end(), ':', ' ');
+    replace(newLine.begin(), newLine.end(), ',', ' ');
+
+    stringstream ss(newLine);
+
+    while(ss >> token){
+        for (vector<MacroName*>::iterator it = MNT.begin(); it != MNT.end(); it++) {
+            if ((*it)->getName() == token) {
+                buffer = MDT[(*it)->getIndexMDT()]->getDefinition();
+                buffer.erase(buffer.find("ENDMACRO"), 8);
+
+                for (int i = 0; i < (*it)->getNumArgs(); i++) {
+                    ss >> token;
+                    findAndReplaceAll(buffer, to_string(i), token);
+                }
+
+                line = buffer;
+                removeLine = true;
+                outputFile << line;
+                break;
+            }
+        }
+    }
 }
 
 
