@@ -1,11 +1,11 @@
-#include "include/preprocessing.hpp"
-#include "include/macro.hpp"
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <algorithm>
+
+#include "include/preprocessing.hpp"
+
 
 using namespace std;
 

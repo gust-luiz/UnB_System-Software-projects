@@ -5,13 +5,13 @@ SRCDIR = src
 OBJDIR = obj
 
 
-all: objFolder preprocessing.o macro.o montador
+all: objFolder utils.o preprocessing.o  montador
 
 preprocessing.o: $(SRCDIR)/preprocessing.cpp $(INCLDIR)/preprocessing.hpp
 	$(CC) $(CFLAGS) -c $(SRCDIR)/preprocessing.cpp -I $(INCLDIR) -o $(OBJDIR)/preprocessing.o
 
-macro.o: $(SRCDIR)/macro.cpp $(INCLDIR)/macro.hpp
-	$(CC) $(CFLAGS) -c $(SRCDIR)/macro.cpp -I $(INCLDIR) -o $(OBJDIR)/macro.o
+utils.o: $(SRCDIR)/utils.cpp $(INCLDIR)/utils.hpp
+	$(CC) $(CFLAGS) -c $(SRCDIR)/utils.cpp -I $(INCLDIR) -o $(OBJDIR)/utils.o
 
 montador:
 	$(CC) $(CFLAGS) montador.cpp $(OBJDIR)/*.o -I $(INCLDIR) -o montador
