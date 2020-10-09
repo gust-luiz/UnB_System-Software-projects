@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "include/preprocessing.hpp"
+#include "include/twoPass.hpp"
 
 
 using namespace std;
@@ -12,12 +13,18 @@ using namespace std;
 
 int main(int argc, char **argv){
 
-    string flagCommand = argv[1];
+    string flagOption = argv[1];
     string filename = argv[2];
 
     PreProcessing *preprocessing = new PreProcessing();
+    TwoPass *twoPass = new TwoPass();
 
-    preprocessing->runPreProcessing(filename);
+    if (flagOption == "-p") {
+        preprocessing->runPreProcessing(filename);        
+    }
+    if (flagOption == "-o") {
+        twoPass->runTwoPassAlgorithm(filename);
+    }
 
     return 0;
 

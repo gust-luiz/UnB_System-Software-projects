@@ -8,12 +8,11 @@
 #include <vector>
 #include <algorithm>
 
-
 using namespace std;
+
 
 class EquDirective{
     public:
-
         void setLabel(string label){
             this->label = label;
         }
@@ -88,6 +87,8 @@ class PreProcessing{
         PreProcessing(){}
 
         void runPreProcessing(string filename);
+
+        void lineFormatting(ifstream &inputFile, string &line);
 
         void diretivesPipeline(ifstream &inputFile, ofstream &outputFile, string &line);
 

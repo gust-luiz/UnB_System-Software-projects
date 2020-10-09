@@ -1,17 +1,17 @@
 #include "../include/utils.hpp"
 
+// Função para substituir todas as aparições de uma substring por outra
+void findAndReplaceAll(string &str, string searching, string replacing){
 
-void findAndReplaceAll(string &data, string toSearch, string replaceStr){
+    size_t indice = str.find(searching);
 
-    size_t pos = data.find(toSearch);
-
-    while( pos != string::npos){
-        data.replace(pos, toSearch.size(), replaceStr);
-        pos = data.find(toSearch, pos + replaceStr.size());
+    while (indice != string::npos) {
+        str.replace(indice, searching.size(), replacing);
+        indice = str.find(searching, indice + replacing.size());
     }
 }
 
-
+// Função para remover comentários (iniciados pelo caracter ;) dentro de uma string
 string lineCleanComments(string line){
 
     size_t indice = line.find(";");
@@ -22,15 +22,16 @@ string lineCleanComments(string line){
     return line;
 }
 
-
+// Função para substituir sequências de espaços em branco por somente um espaço, além de remover espaços em branco
+// presentes nas extremidades da string
 string lineCleanExtraBlanks(string line){
-
+    // Remove sequência de espaços em branco desnecessária
     line.erase(unique(line.begin(), line.end(), [] (char a, char b) { return isspace(a) && isspace(b); }), line.end());
 
+    // Remove espaços em branco das extremidades
     if (isspace(line.front())){
         line.erase(0, 1);
     }
-
     if (isspace(line.back())){
         line.pop_back();
     }
@@ -38,7 +39,7 @@ string lineCleanExtraBlanks(string line){
     return line;
 }
 
-
+// Função que realiza chamadas das funções para limpeza de espaços em branco e comentários de uma string
 string lineCleaning(string line){
 
     line = lineCleanComments(line);
@@ -47,46 +48,10 @@ string lineCleaning(string line){
     return line;
 }
 
+// Função que modifica todos os caracteres de uma string para caixa alta (Maiúscula)
 string lineUpperCase(string line){
 
     transform(line.begin(), line.end(),line.begin(), ::toupper);
 
     return line;
-}
-
-
-void lineFormatting(ifstream &inputFile, string &line){
-
-    string nextLine;
-
-    line = lineCleaning(line);
-
-    // Verifica se a linha restante é vazia ou apenas espaços em branco e descarta se verdadeiro
-    while (line.empty() || all_of(line.begin(), line.end(), [](char c){return isspace(c);})) {
-        getline(inputFile, line);
-        line = lineCleaning(line);
-    }
-
-    line = lineUpperCase(line);
-
-    // Se a linha contém um rótulo
-    if (line.find(':') != string::npos){
-        size_t pos = line.find(':');
-        string aux = line.substr(pos+1);
-
-        // Verifica se há quebra de linha após rótulo e busca próxima linha com conteúdo para esse rótulo
-        if (aux.empty() || (aux.compare(" ") == 0)){
-            getline(inputFile, nextLine);
-            nextLine = lineCleaning(nextLine);
-
-            while (nextLine.empty() || all_of(nextLine.begin(), nextLine.end(), [](char c){return isspace(c);})) {
-                getline(inputFile, nextLine);
-                nextLine = lineCleaning(nextLine);
-            }
-            nextLine = lineUpperCase(nextLine);
-
-            // Concatena linha com conteúdo ao rótulo no qual ocorreu quebra de linha
-            line += " " + nextLine;
-        }
-    }
 }

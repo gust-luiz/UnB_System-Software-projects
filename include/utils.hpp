@@ -16,6 +16,5 @@ string lineUpperCase(string line);
 string lineCleaning(string line);
 string lineCleanExtraBlanks(string line);
 string lineCleanComments(string line);
-void lineFormatting(ifstream &inputFile, string &line);
 
 #endif
