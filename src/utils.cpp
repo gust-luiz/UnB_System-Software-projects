@@ -26,6 +26,7 @@ string lineCleanComments(string line){
 // presentes nas extremidades da string
 string lineCleanExtraBlanks(string line){
     // Remove sequência de espaços em branco desnecessária
+    replace(line.begin(), line.end(), '\t', ' ');
     line.erase(unique(line.begin(), line.end(), [] (char a, char b) { return isspace(a) && isspace(b); }), line.end());
 
     // Remove espaços em branco das extremidades

@@ -1,6 +1,6 @@
 #include "../include/twoPass.hpp"
 
-
+// Função que inicializa a tabela de instruções (dicionário) com dados definidos para o montador
 void TwoPass::createInstructions(){
     instructions = 
     {
@@ -21,13 +21,13 @@ void TwoPass::createInstructions(){
     };
 }
 
-
+// Função para rodar a primeira passagem do montador
 void TwoPass::runFirstPass(ifstream &inputFile){
 
     string line;
     string label, operation;
     int positionCounter = 0;
-    map<string, Instruction*>::iterator it;
+    map<string, Instruction*>::iterator it;  // Iterador para o dicionário da Tabela de Instruções
 
     while(getline(inputFile, line)){
 
@@ -76,15 +76,16 @@ void TwoPass::runFirstPass(ifstream &inputFile){
     }
 }
 
-
+// Função para realização da segunda passagem do montador
 void TwoPass::runSecondPass(ifstream &inputFile, ofstream &outputFile){
 
     string line, token;
     map<string, Instruction*>::iterator it;
-    bool sectionText, sectionData;
+    bool sectionText, sectionData;  // booleanos para indicar se a seção sendo percorrida é TEXT ou DATA
 
     while(getline(inputFile, line)){
 
+        // Se a linha indicar início de SECTION, lê a linha seguinte e ativa o marcador correspondente à seção
         if(line.find("SECTION TEXT") != string::npos){
             getline(inputFile, line);
             sectionText = true;
@@ -96,16 +97,21 @@ void TwoPass::runSecondPass(ifstream &inputFile, ofstream &outputFile){
             sectionData = true;
         }
 
+        // Para linha dentro da seção de texto
         if (sectionText && !sectionData) {
+            // Se linha contém rótulo, despreza o rótulo
             if(line.find(':') != string::npos){
                 line = line.substr(line.find(':') + 1);
             }
 
+            // Limpeza da linha para restar apenas tokens separados por espaços
             replace(line.begin(), line.end(), ',', ' ');
             stringstream ss(line);
 
+            // Para cada token presente na linha
             while(ss >> token){
-
+                // Se o token for uma instrução, grava na saída o opcode correspondente.
+                // Se o token for um rótulo, obtém o valor da posição de memória na tabela de símbolos e grava na saída
                 it = instructions.find(token);
                 if (it != instructions.end()){
                     outputFile << it->second->getOpcode() << " ";
@@ -121,20 +127,24 @@ void TwoPass::runSecondPass(ifstream &inputFile, ofstream &outputFile){
             }
         }
 
+        // Para linha dentro da seção de dados
         if(sectionData && !sectionText){
+            // Se linha contém rótulo, despreza o rótulo
             if(line.find(':') != string::npos){
                 line = line.substr(line.find(':') + 1);
             }
 
             stringstream ss(line);
 
+            // Para cada token na linha
             while(ss >> token) {
-
+                // Se o token for diretiva SPACE, grava 00 na saída.
+                // Se o token for diretiva CONST, grava o valor correspondente na saída
                 if(token == "SPACE"){
                     outputFile << "00" << " ";
                 }
                 if(token == "CONST"){
-                    ss >> token;
+                    ss >> token;  // obtem valor correspondente ao CONST
                     outputFile << token << " ";
                 }
             }
@@ -142,29 +152,31 @@ void TwoPass::runSecondPass(ifstream &inputFile, ofstream &outputFile){
     }
 }
 
-
+// Função base para rodar o algoritmo de duas passagens do montador
 void TwoPass::runTwoPassAlgorithm(string filename){
 
-    ifstream inputFile(filename);
-    ofstream outputFile(filename.substr(0, filename.find('.')) + ".obj");
+    ifstream inputFile(filename);  // Abertura do arquivo de input
+    ofstream outputFile(filename.substr(0, filename.find('.')) + ".obj");  // Abertura do arquivo de output
     string line;
 
-    createInstructions();
+    createInstructions();  // Chama função para criar a Tabela de Instruções
 
-    runFirstPass(inputFile);
-    //printSymbolTable();
+    runFirstPass(inputFile);  // Primeira passagem
+    printSymbolTable();
 
+    // Reinicia o arquivo de input para rodar a Segunda passagem
     inputFile.clear();
     inputFile.seekg(0);
     
-    runSecondPass(inputFile, outputFile);
+    runSecondPass(inputFile, outputFile);  // Segunda passagem
 
+    // Fechamento dos arquivos de input e output
     inputFile.close();
     outputFile.close();
 }
 
-
+// Função para printar no console a tabela de símbolos gerada na Primeira passagem
 void TwoPass::printSymbolTable() {
-  for (auto symbol:symbolTable)
-    cout << "Symbol: " << symbol->getLabel() << " | Value: " << symbol->getValue() << endl;
+  for (auto symbol : symbolTable)
+    cout << symbol->getLabel() << " | " << symbol->getValue() << endl;
 }

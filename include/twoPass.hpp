@@ -11,7 +11,8 @@
 
 using namespace std;
 
-
+// Classe de símbolos a serem adicionados na Tabela de Símbolos
+// Os objetos dessa Classe contém o rótulo e o valor correspondente ao seu endereço de memória
 class Symbol{
     public:
         Symbol();
@@ -41,7 +42,8 @@ class Symbol{
         string value;
 };
 
-
+// Classe dos objetos que representam as intruções definidas do Montador.
+// Os objetos contém o Opcode, o número de operandos e o tamanho de memória ocupado pela instrução
 class Instruction{
     public:
         Instruction();
@@ -80,7 +82,7 @@ class Instruction{
         int numOperands, size;
 };
 
-
+// Classe com funções e atributos necessários para realização do algoritmo de duas passagens do montador.
 class TwoPass{
     public:
         void runTwoPassAlgorithm(string filename);
@@ -92,8 +94,9 @@ class TwoPass{
         void printSymbolTable();
 
     private:
-        map<string, Instruction*> instructions;
-        vector<Symbol*> symbolTable;
+        // Dicionário que conterá o mnemônico da instrução como Key e um objeto da Classe Instruction como Value.
+        map<string, Instruction*> instructions;   
+        vector<Symbol*> symbolTable;  // Vetor que representa a Tabela de símbolos, com objetos da Classe Symbol
 };
 
 #endif

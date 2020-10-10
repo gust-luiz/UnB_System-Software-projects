@@ -26,6 +26,8 @@ objFolder:
 	mkdir -p $(OBJDIR)
 
 clean: 
-	rm $(OBJDIR)/*.o
-	rmdir $(OBJDIR)
-	rm montador
+	rm -f montador
+	rm -f *.pre
+	rm -f *.obj
+	rm -f *.txt
+	rm -rf $(OBJDIR)

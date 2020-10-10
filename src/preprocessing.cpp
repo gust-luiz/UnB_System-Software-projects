@@ -51,12 +51,12 @@ void PreProcessing::lineFormatting(ifstream &inputFile, string &line){
     }
 }
 
-
+// Função para leitura e armazenamento da definição de uma macro na MNT
 void PreProcessing::macroDeclaration(ifstream &inputFile, ofstream &outputFile, string &line){
 
     string label, token, newLine;
     string buffer = "";
-    vector<string> argsList;
+    vector<string> argsList;  // Vetor que conterá os argumentos da definição da macro
 
     // Limpeza da linha para restar apenas tokens separados por espaços
     replace(line.begin(), line.end(), ':', ' ');
@@ -76,7 +76,7 @@ void PreProcessing::macroDeclaration(ifstream &inputFile, ofstream &outputFile, 
         }
     }
 
-    // Cria uma nova instância de nome para Macro e cadastra na MNT essa intância que contém o nome,
+    // Cria uma objeto MacroName e cadastra na MNT essa intância que contém o nome,
     // quantidade de argumentos e o índice na MDT que irá conter a definição da macro
     MacroName *macroName = new MacroName();
     macroName->setName(label);
@@ -121,7 +121,7 @@ void PreProcessing::macroDeclaration(ifstream &inputFile, ofstream &outputFile, 
                 }
             }
         }
-        // Vai preenchendo um buffer que conterá a definição da Macro
+        // Vai preenchendo o buffer que conterá a definição da Macro
         buffer += line + "\n";
     }
 
@@ -131,7 +131,8 @@ void PreProcessing::macroDeclaration(ifstream &inputFile, ofstream &outputFile, 
     MDT.push_back(macroDefinition);
 }
 
-
+// Função para verificar se uma linha contém chamada de macro.
+// Caso possua, irá expandir com a definição obtida da MDT para a macro em questão
 void PreProcessing::checkMacro(ofstream &outputFile, string &line){
 
     string token;
@@ -153,7 +154,7 @@ void PreProcessing::checkMacro(ofstream &outputFile, string &line){
                 buffer.erase(buffer.find("ENDMACRO"), 8);
 
                 // Leitura dos tokens restantes (que são os argumentos da macro) e substitui os argumentos
-                // genéricos da definição obtida da MDT
+                // genéricos da definição obtida da MDT pelos argumento reais
                 for (int i = 0; i < (*it)->getNumArgs(); i++) {
                     ss >> token;
                     findAndReplaceAll(buffer, to_string(i), token);
@@ -170,7 +171,7 @@ void PreProcessing::checkMacro(ofstream &outputFile, string &line){
     }
 }
 
-
+// Função para obtenção de uma diretiva EQU
 void PreProcessing::equDeclaration(string line){
 
     string label, value;
@@ -181,7 +182,7 @@ void PreProcessing::equDeclaration(string line){
 
     stringstream ss(line);
 
-    // Obtenção dos tokens referentes ao rótulo e ao seu Valor correspondente
+    // Obtenção dos tokens referentes ao rótulo e ao seu valor correspondente
     ss >> label >> value;
 
     // Cria uma nova Diretiva EQU relacionando o rótulo ao valor e adiciona no vetor de EQU's
@@ -191,7 +192,7 @@ void PreProcessing::equDeclaration(string line){
     equList.push_back(equDirective);
 }
 
-
+// Função que verifica se a linha contém um rótulo de uma diretiva EQU e o substitui devidamente
 string PreProcessing::checkEqu(string &line){
 
     string token, value;
@@ -203,7 +204,7 @@ string PreProcessing::checkEqu(string &line){
 
     stringstream ss(newLine);
 
-    // Para cada token da linha, verifica se há correspondente no vetor de EQU. Caso haja, substitui o token pelo valor
+    // Para cada token da linha, verifica se há correspondente no vetor de EQU's. Caso haja, substitui o token pelo valor
     // correspondente ao EQU. Caso não haja, a linha não é alterada.
     while(ss >> token){
         for (vector<EquDirective*>::iterator it = equList.begin(); it != equList.end(); it++) {
@@ -218,20 +219,25 @@ string PreProcessing::checkEqu(string &line){
     return line;
 }
 
-
+// Função para verificação de uma sentença IF.
 void PreProcessing::ifClause(ifstream &inputFile, string &line) {
 
     string ifExpression;
     int ifValue;
 
+    // Se houver rótulo na linha com a sentença IF, ele será desprezado
+    if(line.find(':') != string::npos){
+        line = line.substr(line.find(':') + 1);
+    }
     // Limpa o texto "IF" para restar apenas a expressão
     line.erase(line.find("IF "), 3);
 
     stringstream ss(line);
     
+    // Obtém a expressão da sentença IF
     ss >> ifExpression;
 
-    // Percorre vetor com as diretivas EQU obter o valor referente à expressão da cláusula IF
+    // Percorre vetor com as diretivas EQU para obter o valor referente à expressão da sentença IF
     for (vector<EquDirective*>::iterator it = equList.begin(); it != equList.end(); it++) {
         if((*it)->getLabel() == ifExpression){
             ifValue = stoi((*it)->getValue());
@@ -239,7 +245,7 @@ void PreProcessing::ifClause(ifstream &inputFile, string &line) {
         }
     }
     
-    // Se expressão maior que zero retorna para permitir leitura da próxima linha
+    // Se o valor da expressão for maior que zero, retorna para permitir leitura da próxima linha
     if(ifValue > 0){
         return;
     }
@@ -249,28 +255,31 @@ void PreProcessing::ifClause(ifstream &inputFile, string &line) {
     return;
 }
 
-
+// Função com sequência de ações (pipeline) de verificação que uma linha do arquivo irá passar
 void PreProcessing::diretivesPipeline(ifstream &inputFile, ofstream &outputFile, string &line){
+    
+    smatch matches;
+    regex reg;
 
     removeLine = false;
     declaration = false;
 
     // Declaração de Macro
-    if (line.find("MACRO") != string::npos){
+    if (regex_search(line, matches, reg = ("([: ](MACRO)(\\s|$))"))){
         macroDeclaration(inputFile, outputFile, line);
         removeLine = true;
         declaration = true;
     }
 
     // Declaração de diretiva EQU
-    if (line.find("EQU") != string::npos){
+    if (regex_search(line, matches, reg = ("([: ](EQU ))"))){
         equDeclaration(line);
         removeLine = true;
         declaration = true;
     }
 
     // Sentença IF
-    if (line.find("IF") != string::npos){
+    if (regex_search(line, matches, reg = ("((^|:|\\s)IF(\\s))"))){
         ifClause(inputFile, line);
         removeLine = true;
     }
@@ -283,11 +292,11 @@ void PreProcessing::diretivesPipeline(ifstream &inputFile, ofstream &outputFile,
     
 }
 
-
+// Função base para rodar o pré-processamento
 void PreProcessing::runPreProcessing(string filename){
 
-    ifstream inputFile(filename);
-    ofstream outputFile(filename.substr(0, filename.find('.')) + ".pre");
+    ifstream inputFile(filename);  // Abertura do arquivo de input
+    ofstream outputFile(filename.substr(0, filename.find('.')) + ".pre");  // Abertura do arquivo de output
     string line;
 
     while(getline(inputFile, line)){
@@ -300,10 +309,11 @@ void PreProcessing::runPreProcessing(string filename){
         }
     }
 
-    //printMNT();
-    //printMDT();
-    //printEquList();
+    printMNT();
+    printMDT();
+    printEquList();
 
+    // Fechamento dos arquivos de input e output
     inputFile.close();
     outputFile.close();
 
@@ -311,11 +321,7 @@ void PreProcessing::runPreProcessing(string filename){
 }
 
 
-
-
-
-
-//REMOVER
+// Função para gerar .txt com a MNT
 void PreProcessing::printMNT() {
   ofstream file("MNT.txt");
 
@@ -326,21 +332,23 @@ void PreProcessing::printMNT() {
   file.close();
 }
 
+// Função para gerar .txt com a MDT
 void PreProcessing::printMDT() {
   ofstream file("MDT.txt");
 
   for (size_t i = 0; i < MDT.size(); i++) {
-    file << "Line " << i << ":" << endl;
+    file << "Linha " << i << ":" << endl;
     file << MDT[i]->getDefinition() << endl;
   }
 
   file.close();
 }
 
+// Função para gerar .txt com diretivas EQU
 void PreProcessing::printEquList() {
     ofstream file("EQU.txt");
 
-    for (vector<EquDirective *>::iterator it = equList.begin(); it != equList.end(); it++) {
-        file << "Label: " << (*it)->getLabel() << " | Value: " << (*it)->getValue() << endl;
+    for (auto equ : equList) {
+        file << "Rótulo: " << equ->getLabel() << " | Valor: " << equ->getValue() << endl;
     }
 }
