@@ -162,7 +162,7 @@ void TwoPass::runTwoPassAlgorithm(string filename){
     createInstructions();  // Chama função para criar a Tabela de Instruções
 
     runFirstPass(inputFile);  // Primeira passagem
-    printSymbolTable();
+    //printSymbolTable();
 
     // Reinicia o arquivo de input para rodar a Segunda passagem
     inputFile.clear();

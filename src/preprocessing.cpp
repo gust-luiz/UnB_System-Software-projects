@@ -1,6 +1,11 @@
 #include "../include/preprocessing.hpp"
 #include "../include/utils.hpp"
 
+
+// Variáveis globais. 
+// "removeLine" indica que determinada linha deve ser removida como ocorre no caso de linhas com diretivas EQU, IF, 
+// e declaração de macro.
+// "declaration" indica que linha contém declaração de Macro ou declaração de diretiva EQU
 bool removeLine, declaration;
 
 
@@ -309,9 +314,9 @@ void PreProcessing::runPreProcessing(string filename){
         }
     }
 
-    printMNT();
-    printMDT();
-    printEquList();
+    //printMNT();
+    //printMDT();
+    //printEquList();
 
     // Fechamento dos arquivos de input e output
     inputFile.close();

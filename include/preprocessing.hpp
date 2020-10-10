@@ -12,6 +12,7 @@
 
 using namespace std;
 
+
 // Classe de diretivas EQU. Os objetos possuem os atributos de rótulo e o valor definido na diretiva.
 class EquDirective{
     public:
