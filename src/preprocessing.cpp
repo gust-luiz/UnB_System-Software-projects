@@ -314,9 +314,10 @@ void PreProcessing::runPreProcessing(string filename){
         }
     }
 
-    //printMNT();
-    //printMDT();
-    //printEquList();
+    // Geração de .txt com dados da MNT, MDT e EquList. Descomentar abaixo para obter as saídas
+    //showMNT();
+    //showMDT();
+    //showEquList();
 
     // Fechamento dos arquivos de input e output
     inputFile.close();
@@ -327,7 +328,7 @@ void PreProcessing::runPreProcessing(string filename){
 
 
 // Função para gerar .txt com a MNT
-void PreProcessing::printMNT() {
+void PreProcessing::showMNT() {
   ofstream file("MNT.txt");
 
   for (vector<MacroName *>::iterator it = MNT.begin(); it != MNT.end(); it++) {
@@ -338,7 +339,7 @@ void PreProcessing::printMNT() {
 }
 
 // Função para gerar .txt com a MDT
-void PreProcessing::printMDT() {
+void PreProcessing::showMDT() {
   ofstream file("MDT.txt");
 
   for (size_t i = 0; i < MDT.size(); i++) {
@@ -350,7 +351,7 @@ void PreProcessing::printMDT() {
 }
 
 // Função para gerar .txt com diretivas EQU
-void PreProcessing::printEquList() {
+void PreProcessing::showEquList() {
     ofstream file("EQU.txt");
 
     for (auto equ : equList) {

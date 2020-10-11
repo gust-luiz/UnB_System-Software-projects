@@ -1,3 +1,10 @@
+/* 
+Projeto 1 de Software Básico 1-2020 - Universidade de Brasília
+Aluno: Luiz Gustavo Rodrigues Martins
+Matricula: 13/0123293
+*/
+
+
 #include "include/preprocessing.hpp"
 #include "include/twoPass.hpp"
 

@@ -162,6 +162,7 @@ void TwoPass::runTwoPassAlgorithm(string filename){
     createInstructions();  // Chama função para criar a Tabela de Instruções
 
     runFirstPass(inputFile);  // Primeira passagem
+    // Exibir no console a tabela de símbolos gerada. Descomentar linha abaixo para visualizar a saída
     //printSymbolTable();
 
     // Reinicia o arquivo de input para rodar a Segunda passagem
@@ -175,8 +176,9 @@ void TwoPass::runTwoPassAlgorithm(string filename){
     outputFile.close();
 }
 
+
 // Função para printar no console a tabela de símbolos gerada na Primeira passagem
-void TwoPass::printSymbolTable() {
+void TwoPass::showSymbolTable() {
   for (auto symbol : symbolTable)
     cout << symbol->getLabel() << " | " << symbol->getValue() << endl;
 }

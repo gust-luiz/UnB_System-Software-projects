@@ -103,9 +103,9 @@ class PreProcessing{
         string checkEqu(string &line);
         void ifClause(ifstream &inputFile, string &line);
 
-        void printEquList();
-        void printMNT();
-        void printMDT();
+        void showEquList();
+        void showMNT();
+        void showMDT();
 
     private:
         vector<EquDirective*> equList;  // Vetor que conterá as diretivas EQU

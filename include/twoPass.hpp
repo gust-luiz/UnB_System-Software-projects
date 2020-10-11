@@ -91,7 +91,7 @@ class TwoPass{
 
         void createInstructions();
 
-        void printSymbolTable();
+        void showSymbolTable();
 
     private:
         // Dicionário que conterá o mnemônico da instrução como Key e um objeto da Classe Instruction como Value.
