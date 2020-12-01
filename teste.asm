@@ -1,4 +1,3 @@
-%include "io.inc"
 section .data
 _msgQtdChar    dd  'Foram lidos '
 _MSGQTDCHARSIZE EQU  $-_msgQtdChar
@@ -20,7 +19,7 @@ _NWLNSIZE	EQU	$-_nwln
 
 _NUMBERSIZE	EQU	4
 _CHARSIZE	EQU	1
-_STRINGSIZE	EQU	100
+_STRINGSIZE	EQU	100	
 
 
 section .bss
@@ -35,9 +34,8 @@ _dummyBuffer    resd    25
 
 
 section .text
-global CMAIN
-CMAIN:
-    mov ebp, esp; for correct debugging
+global _start
+_start:
     
     push eax
     push _number   ;operando cujo endereço de memória irá armazenar o inteiro a ser lido
