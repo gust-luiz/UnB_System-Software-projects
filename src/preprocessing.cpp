@@ -357,4 +357,6 @@ void PreProcessing::showEquList() {
     for (auto equ : equList) {
         file << "Rótulo: " << equ->getLabel() << " | Valor: " << equ->getValue() << endl;
     }
+
+    file.close();
 }
