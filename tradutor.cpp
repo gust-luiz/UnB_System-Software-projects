@@ -18,7 +18,7 @@ int main(int argc, char **argv){
 
     string filename = argv[1];
     string filenamePre = filename.substr(0, filename.find('.')) + ".pre";
-    string filenameFunc = "io_functions.txt";
+    string filenameFunc = "io_functions.asm";
 
     PreProcessing *preprocessing = new PreProcessing();
     preprocessing->runPreProcessing(filename);  // Pré-processamento
