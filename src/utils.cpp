@@ -9,6 +9,7 @@ void findAndReplaceAll(string &str, string searching, string replacing){
         str.replace(indice, searching.size(), replacing);
         indice = str.find(searching, indice + replacing.size());
     }
+
 }
 
 // Função para remover comentários (iniciados pelo caracter ;) dentro de uma string
