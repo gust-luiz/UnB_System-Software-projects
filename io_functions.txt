@@ -1,3 +1,6 @@
+;-----------------------------------------------
+;Trecho com funções de Input/Output
+
 section .data
 _msgQtdChar    dd  'Foram lidos '
 _MSGQTDCHARSIZE EQU  $-_msgQtdChar
@@ -23,10 +26,6 @@ _STRINGSIZE	EQU	100
 
 
 section .bss
-_number resd    1
-_char  resd   1 ;char armazenado como dword mas irá conter apenas um caracter
-_string  resd   25  ; string contém até 25*4=100 caracteres
-_stringSize  resd   1
 _numberStr  resd   1    ;variável auxiliar para armazenar a string de inteiro lida para posterior conversão para inteiro
 _qtdChars   resd    1   
 _flagSigned resd    1
@@ -34,46 +33,6 @@ _dummyBuffer    resd    25
 
 
 section .text
-global _start
-_start:
-    
-    push eax
-    push _number   ;operando cujo endereço de memória irá armazenar o inteiro a ser lido
-    call LeerInteiro
-    call _showQtdRead
-    pop eax
-    
-    push _number
-    call EscreverInteiro
-    call _printNewLine
-    
-    push eax
-    push _char  ;operando cujo endereço de memória irá armazenar o char a ser lido
-    call LeerChar
-    call _showQtdRead
-    pop eax
-    
-    push _char
-    call EscreverChar
-    call _printNewLine
-    
-    push eax
-    push _string   ;operando cujo endereço de memória irá armazenar a string a ser lida
-    push 100
-    call LeerString
-    call _showQtdRead
-    pop eax
-    
-    push _string
-    push 22
-    call EscreverString
-    call _printNewLine
-    
-    
-    mov eax,1
-    mov ebx,0
-    int 80h
-
 LeerInteiro:
     enter 0,0
     push ebx
@@ -93,8 +52,6 @@ LeerInteiro:
     mov edx,_NUMBERSIZE
     int 80h
     
-    
-
     ; se linefeed 0ah está no buffer, então ok e vai decrementar um em eax para excluir o 0ah da contagem de caracteres lidos
     cmp byte [ecx + eax - 1],0ah ; verifica LF no final do input lido
     jz _removeLFInt
@@ -114,8 +71,6 @@ _removeLFInt:
 _continuaLeerInteiro:
     push eax
     mov ecx,eax
-    ;cmp ecx,1   ;ecx igual a 1 indica que há apenas [enter] como input
-    ;je  _armazenaInteiro
     sub eax,eax
     sub ebx,ebx
     mov esi,0
@@ -293,14 +248,14 @@ LeerString:
     
     mov eax,3
     mov ebx,0
-    mov ecx,[ebp+12];_string
-    mov edx,[ebp+8];_STRINGSIZE
+    mov ecx,[ebp+12];
+    mov edx,[ebp+8];
     int 80h
     
     ; se linefeed 0ah está no buffer, então ok e vai decrementar um em eax para excluir o 0ah da contagem de caracteres lidos
     cmp byte [ecx + eax - 1],0ah ; verifica LF no final do input lido
     jz _removeLFString
-    ; senão, irá colocar o restante do buffer do teclado em um buffer descartável (dummy)
+    ; senão, irá colocar o restante do buffer do teclado (caracteres em excesso) em um buffer descartável (dummy)
     push eax
     mov eax,3
     mov ebx,0
@@ -399,3 +354,4 @@ _printNewLine:
     pop eax
     pop ebp
     ret
+;-----------------------------------------------
