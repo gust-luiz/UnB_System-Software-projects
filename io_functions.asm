@@ -1,4 +1,6 @@
-%include "io.inc"
+;-----------------------------------------------
+;Trecho com funções de Input/Output
+
 section .data
 _msgQtdChar    dd  'Foram lidos '
 _MSGQTDCHARSIZE EQU  $-_msgQtdChar
@@ -6,76 +8,25 @@ _MSGQTDCHARSIZE EQU  $-_msgQtdChar
 _msgQtdChar2    dd  ' caracter(es)'
 _MSGQTDCHAR2SIZE EQU  $-_msgQtdChar2
 
-_msgLerInteiro  dd  'Informe um inteiro: '
-_MSGLERINTEIROSIZE EQU  $-_msgLerInteiro
-
-_msgLerChar dd  'Informe um caracter: '
-_MSGLERCHARSIZE EQU  $-_msgLerChar
-
-_msgLerString   dd  'Informe uma string: '
-_MSGLERSTRINGSIZE EQU  $-_msgLerString
+_msgOverflow    dd  'Ocorreu overflow na multiplicação! O programa foi encerrado.'
+_MSGOVERFLOWSIZE    EQU $-_msgOverflow
 
 _nwln   dd	0dh,0ah
 _NWLNSIZE	EQU	$-_nwln
 
-_NUMBERSIZE	EQU	4
-_CHARSIZE	EQU	1
-_STRINGSIZE	EQU	100
+_NUMBERSIZE	EQU	4 ;o inteiro de entrada de 3 dígitos contém no máximo 4 caracteres considerando o sinal negativo
+_CHARSIZE	EQU	1 ;char contém apenas um caracter de tamanho
 
 
 section .bss
-_number resd    1
-_char  resd   1 ;char armazenado como dword mas irá conter apenas um caracter
-_string  resd   25  ; string contém até 25*4=100 caracteres
-_stringSize  resd   1
-_numberStr  resd   1    ;variável auxiliar para armazenar a string de inteiro lida para posterior conversão para inteiro
-_qtdChars   resd    1   
-_flagSigned resd    1
-_dummyBuffer    resd    25
+_numberStr  resd   3    ;variável auxiliar para armazenar uma string de inteiro de 32 bits
+_qtdChars   resd    1   ;variável que irá conter a quantidade de caracteres lidos
+_flagSigned resd    1   ;variável cujo valor irá indicar se um determinado número é negativo ou não
+_dummyBuffer    resd    25  ;variável para descartar caracteres em excesso que permanecem no buffer do teclado
 
 
 section .text
-global CMAIN
-CMAIN:
-    mov ebp, esp; for correct debugging
-    
-    push eax
-    push _number   ;operando cujo endereço de memória irá armazenar o inteiro a ser lido
-    call LeerInteiro
-    call _showQtdRead
-    pop eax
-    
-    push _number
-    call EscreverInteiro
-    call _printNewLine
-    
-    push eax
-    push _char  ;operando cujo endereço de memória irá armazenar o char a ser lido
-    call LeerChar
-    call _showQtdRead
-    pop eax
-    
-    push _char
-    call EscreverChar
-    call _printNewLine
-    
-    push eax
-    push _string   ;operando cujo endereço de memória irá armazenar a string a ser lida
-    push 100
-    call LeerString
-    call _showQtdRead
-    pop eax
-    
-    push _string
-    push 22
-    call EscreverString
-    call _printNewLine
-    
-    
-    mov eax,1
-    mov ebx,0
-    int 80h
-
+; rotina LeerInteiro
 LeerInteiro:
     enter 0,0
     push ebx
@@ -83,19 +34,11 @@ LeerInteiro:
     push edx
     push esi
     
-    mov eax,4
-    mov ebx,1
-    mov ecx,_msgLerInteiro
-    mov edx,_MSGLERINTEIROSIZE
-    int 80h
-    
     mov eax,3
     mov ebx,0
     mov ecx,_numberStr
     mov edx,_NUMBERSIZE
     int 80h
-    
-    
 
     ; se linefeed 0ah está no buffer, então ok e vai decrementar um em eax para excluir o 0ah da contagem de caracteres lidos
     cmp byte [ecx + eax - 1],0ah ; verifica LF no final do input lido
@@ -109,30 +52,26 @@ LeerInteiro:
     int 80h
     pop eax
     jmp _continuaLeerInteiro
-    
 _removeLFInt:
     dec eax ;decrementa eax para não considerar o LF na contagem
-    
 _continuaLeerInteiro:
     push eax
     mov ecx,eax
-    ;cmp ecx,1   ;ecx igual a 1 indica que há apenas [enter] como input
-    ;je  _armazenaInteiro
     sub eax,eax
     sub ebx,ebx
     mov esi,0
-    cmp byte [_numberStr],'-'
+    cmp byte [_numberStr],'-'  ;verifica se o número é negativo '-'
     jne _converterStringInteiro
-    inc esi
-    mov dword [_flagSigned],1
+    inc esi ;se o número for negativo, já incrementa o esi que indica o index do caracter
+    mov dword [_flagSigned],1  ;seta flag indicando que o número é negativo
 _converterStringInteiro:
     mov bl,[_numberStr+esi]
-    sub ebx,0x30
+    sub ebx,0x30 ;transforma para representação de inteiro
     add eax,ebx
     inc esi
-    cmp byte [_numberStr+esi],0ah
+    cmp byte [_numberStr+esi],0ah ;LF [enter] é um indicativo de que terminou o número
     je  _verificaNegativo
-    cmp esi,ecx
+    cmp esi,ecx ;outro indicativo de que o número terminou é verificar o ecx que contém a quantidade de dígitos lidos
     je  _verificaNegativo
     mov ebx,10
     imul ebx
@@ -141,7 +80,7 @@ _verificaNegativo:
     cmp dword [_flagSigned],0
     je  _armazenaInteiro
     neg eax ;o número contido em eax é convertido para negativo
-    mov dword [_flagSigned],0
+    mov dword [_flagSigned],0 ;reseta a flag de negativo
 _armazenaInteiro:
     mov ebx,[ebp+8]
     mov [ebx],eax
@@ -167,11 +106,12 @@ EscreverInteiro:
     mov ebx,[ebp+8]
     mov eax,[ebx]
     mov esi,0
-    test eax,eax
-    jns _converterInteiroString
-    mov dword [_flagSigned],1
-    neg eax
-    mov dword [ebx+esi],'-'
+    mov dword [_numberStr],0
+    test eax,eax 
+    jns _converterInteiroString ;após o 'test' verifica a flag de signed para checar se o número é negativo ou não
+    mov dword [_flagSigned],1 ;seta a flag se o número for negativo
+    neg eax ;nega o número para realizar operação com ele positivo
+    mov dword [_numberStr+esi],'-' ;já insere o sinal de negativo
     inc esi
 _converterInteiroString:
     mov ecx,10
@@ -179,14 +119,14 @@ _converterInteiroString:
     idiv ecx
     add edx,0x30    ;converte o resto binário em edx para ASCII
     push edx
-    cmp eax,0   ;compara o quociente binário em eax é igual a zero
+    cmp eax,0   ;compara se o quociente binário em eax é igual a zero
     jne _notZero
     jmp _incremento
 _notZero:
     mov ecx,esi
     inc ecx ; ecx vale esi+1
-    mov edi,[ebx+esi]
-    mov dword [ebx+ecx],edi
+    mov edi,[_numberStr+esi]
+    mov dword [_numberStr+ecx],edi
 _incremento:
     inc esi
     cmp eax,0
@@ -197,13 +137,13 @@ _incremento:
     je  _recuperaDigitos
     inc esi
     mov dword [_flagSigned],0
-_recuperaDigitos:
-    pop dword [ebx+esi]
+_recuperaDigitos: ;os dígitos foram inserido na pilha e são resgatados para manter a ordem dos dígitos
+    pop dword [_numberStr+esi]
     inc esi
     cmp esi,ecx
     jne _recuperaDigitos
-    mov edx,_NUMBERSIZE
-    mov ecx,ebx
+    mov edx,esi ;esi contém a quantidade de dígitos
+    mov ecx,_numberStr
     mov ebx,1
     mov eax,4
     int 80h
@@ -217,18 +157,12 @@ _recuperaDigitos:
     pop ebp
     ret 4
 
-
+;rotina para leitura de um char
 LeerChar:
     enter 0,0
     push ebx
     push ecx
     push edx
-    
-    mov eax,4
-    mov ebx,1
-    mov ecx,_msgLerChar
-    mov edx,_MSGLERCHARSIZE
-    int 80h
     
     mov eax,3
     mov ebx,0
@@ -248,10 +182,8 @@ LeerChar:
     int 80h
     pop eax
     jmp _fimLeerChar
-    
 _removeLFChar:
     dec eax ;decrementa eax para não considerar o LF na contagem
-    
 _fimLeerChar:
     pop edx
     pop ecx
@@ -259,7 +191,7 @@ _fimLeerChar:
     pop ebp
     ret 4
 
-
+;rotina para escrever um char
 EscreverChar:
     enter 0,0
     push eax
@@ -280,23 +212,17 @@ EscreverChar:
     pop ebp
     ret 4
 
-
+;rotina para leitura de string
 LeerString:
     enter 0,0
     push ebx
     push ecx
     push edx
     
-    mov eax,4
-    mov ebx,1
-    mov ecx,_msgLerString
-    mov edx,_MSGLERSTRINGSIZE
-    int 80h
-    
     mov eax,3
     mov ebx,0
-    mov ecx,[ebp+12];_string
-    mov edx,[ebp+8];_STRINGSIZE
+    mov ecx,[ebp+12];
+    mov edx,[ebp+8];
     int 80h
     
     ; se linefeed 0ah está no buffer, então ok e vai decrementar um em eax para excluir o 0ah da contagem de caracteres lidos
@@ -311,10 +237,8 @@ LeerString:
     int 80h
     pop eax
     jmp _fimLeerString
-    
 _removeLFString:
     dec eax ;decrementa eax para não considerar o LF na contagem
-    
 _fimLeerString:
     pop edx
     pop ecx
@@ -322,7 +246,7 @@ _fimLeerString:
     pop ebp
     ret 8
 
-
+;rotina para exibir string
 EscreverString:
     enter 0,0
     push eax
@@ -342,8 +266,9 @@ EscreverString:
     pop eax
     pop ebp
     ret 8
-
-
+    
+;rotina para mostrar quantidade de caracteres que foram lidos em uma função de LER (input)
+;a quantidade de caracteres está contida no registrador eax
 _showQtdRead: 
     enter 0,0
     push eax
@@ -360,7 +285,7 @@ _showQtdRead:
     int 80h
     
     push _qtdChars
-    call EscreverInteiro
+    call EscreverInteiro ;chama função EscreverInteiro para exibir a quantidade de inteiros
     
     mov eax,4
     mov ebx,1
@@ -380,8 +305,29 @@ _showQtdRead:
     pop eax
     pop ebp
     ret
+   
+;rotina para verificação de Overflow
+;o registrador edx passado como parâmetro é comparado com 0x00000000 e 0xFFFFFFFF, sendo diferente indica overflow
+_verificaOverflow:
+    enter 0,0 
+    cmp dword [ebp+8],0x00000000
+    je _falseOverflow
+    cmp dword [ebp+8],0xFFFFFFFF
+    je _falseOverflow
+;se ocorrer overflow irá exibir mensagem e pular para rotina de encerramento do programa
+_trueOverflow:
+    mov eax,4
+    mov ebx,1
+    mov ecx,_msgOverflow
+    mov edx,_MSGOVERFLOWSIZE
+    int 80h
+    jmp _EXIT
+;se não ocorreu overflow retorna para continuação do programa
+_falseOverflow:
+    pop ebp
+    ret 4
     
-    
+;rotina para printar [enter] no display
 _printNewLine:
     enter 0,0
     push eax
@@ -401,3 +347,10 @@ _printNewLine:
     pop eax
     pop ebp
     ret
+    
+; rotina com interrupção para encerrar o programa
+_EXIT:
+    mov eax,1
+    mov ebx,0
+    int 80h
+;-----------------------------------------------
